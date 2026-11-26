@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Excel 列幅 TSV 生成</title><style>*{box-sizing:border-box}body{background:#171a21;color:#e5e9f0;font:15px system-ui;margin:0}main{max-width:1100px;margin:auto;padding:24px}section{background:#222731;border:1px solid #394150;border-radius:12px;padding:18px;margin:14px 0}h1{font-size:25px}h2{font-size:17px;margin-top:0}textarea,input,select,button{font:inherit;color:inherit;background:#151922;border:1px solid #495466;border-radius:6px;padding:9px}textarea{width:100%;min-height:110px}button{cursor:pointer;background:#365d9c}button:hover{background:#4777bd}[hidden]{display:none!important}label{display:inline-flex;flex-direction:column;gap:5px;margin:6px}input[type=number]{width:100px}#paste{border:2px dashed #7188aa;padding:24px;text-align:center;border-radius:8px;outline:none}#paste:focus{border-color:#8ebaff}small,#status{color:#aebed4}table{border-collapse:collapse;width:100%}td,th{padding:6px;border:1px solid #495466;text-align:left}#preview{overflow:auto;padding:10px 0}#preview table{width:auto;table-layout:fixed;background:#fff;color:#222}#preview td{padding:0;height:25px;border:1px solid #c8c8c8;white-space:nowrap}#preview th{background:#d9e2f3;border:1px solid #222;padding:0 2px;white-space:nowrap;overflow:hidden;font-weight:normal}pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:200px;overflow:auto}details{margin-top:12px}.buttons{display:flex;gap:8px;flex-wrap:wrap}</style><main><h1>Excel 列幅 TSV 生成ツール</h1><section><h2>1. Excelの列幅を取得</h2><div id="paste" tabindex="0">Excelでセル範囲をコピー → ここをクリックして Ctrl+V</div><p id="status">未取得：手入力でも生成できます。</p><details><summary>取得したクリップボード情報</summary><pre id="raw"></pre></details></section><section><h2>2. 項目と設定</h2>
+<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Excel 列幅 TSV 生成</title><style>*{box-sizing:border-box}body{background:#171a21;color:#e5e9f0;font:15px system-ui;margin:0}main{max-width:1100px;margin:auto;padding:24px}section{background:#222731;border:1px solid #394150;border-radius:12px;padding:18px;margin:14px 0}h1{font-size:25px}h2{font-size:17px;margin-top:0}textarea,input,select,button{font:inherit;color:inherit;background:#151922;border:1px solid #495466;border-radius:6px;padding:9px}textarea{width:100%;min-height:110px}button{cursor:pointer;background:#365d9c}button:hover{background:#4777bd}[hidden]{display:none!important}label{display:inline-flex;flex-direction:column;gap:5px;margin:6px}input[type=number]{width:100px}#paste{border:2px dashed #7188aa;padding:24px;text-align:center;border-radius:8px;outline:none}#paste:focus{border-color:#8ebaff}small,#status{color:#aebed4}table{border-collapse:collapse;width:100%}td,th{padding:6px;border:1px solid #495466;text-align:left}#preview{overflow:auto;padding:10px 0}#preview table{width:auto;table-layout:fixed;background:#fff;color:#222}#preview td,#preview th{border:0}#preview td{padding:0;height:25px;white-space:nowrap}#preview th{padding:0 2px;white-space:nowrap;overflow:hidden;font-weight:normal}pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:200px;overflow:auto}details{margin-top:12px}.buttons{display:flex;gap:8px;flex-wrap:wrap}</style><main><h1>Excel 列幅 TSV 生成ツール</h1><section><h2>1. Excelの列幅・ヘッダー色を取得</h2><div id="paste" tabindex="0">Excelでヘッダーを先頭行に含むセル範囲をコピー → ここをクリックして Ctrl+V</div><p id="status">未取得：手入力でも生成できます。</p><details><summary>取得したクリップボード情報</summary><pre id="raw"></pre></details></section><section><h2>2. 項目と設定</h2>
 <label>入力モード<select id="input-mode">
 <option value="headers">項目列のみモード</option>
 <option value="tsv">項目列＆行データモード（TSV）</option>
@@ -11,9 +11,96 @@ ZyuusyoToDenwaBangou</textarea>
 <small id="tsv-help">サンプルデータ作成ツールの C# 変数モードで出力した TSV を貼り付けてください。先頭行を項目名、2行目以降をデータとして読み込みます。</small>
 <textarea id="tsv" aria-label="項目名と行データ（TSV）" aria-describedby="tsv-help tsv-status" spellcheck="false"></textarea>
 <p id="tsv-status" role="status"></p>
-</div><div><label>フォント<input id="font" value="游ゴシック"></label><label>サイズ (pt)<input id="size" type="number" min="1" max="100" value="11"></label><label>基本列幅 (px)<input id="width" type="number" min="1" max="1000" value="30"></label><label>余白 (px)<input id="pad" type="number" min="0" max="500" value="6"></label><label>最小セル数<input id="minimum" type="number" min="1" max="100" value="3"></label><label id="blank-row-setting">データ行数<input id="rows" type="number" min="0" max="100" value="6"></label><label>列幅の使用<select id="mode"><option value="uniform">基本列幅で統一</option><option value="actual">取得した列幅を順番に使用</option></select></label><label>太字<input id="bold" type="checkbox"></label></div></section><section><h2>3. プレビュー</h2><div id="preview"></div><table><thead><tr><th>項目</th><th>文字＋余白 (px)</th><th>セル数</th><th>確保幅 (px)</th></tr></thead><tbody id="stats"></tbody></table></section><section><h2>4. 出力</h2><div class="buttons"><button id="copy">TSVをコピー</button><button id="htmlcopy">結合・罫線付き表をコピー（試験機能）</button><button id="save">TSV保存</button></div><p id="msg" role="status"></p><textarea id="out" readonly></textarea><small>TSVは空白セルをタブで表現します。セル結合・罫線はHTMLコピーのみ。Excel側の貼り付け結果は環境によって異なります。</small></section></main><script>
+</div><div><label>フォント<input id="font" value="游ゴシック"></label><label>サイズ (pt)<input id="size" type="number" min="1" max="100" value="11"></label><label>基本列幅 (px)<input id="width" type="number" min="1" max="1000" value="30"></label><label>余白 (px)<input id="pad" type="number" min="0" max="500" value="6"></label><label>最小セル数<input id="minimum" type="number" min="1" max="100" value="3"></label><label id="blank-row-setting">データ行数<input id="rows" type="number" min="0" max="100" value="6"></label><label>列幅の使用<select id="mode"><option value="uniform">基本列幅で統一</option><option value="actual">取得した列幅を順番に使用</option></select></label>
+<label>罫線の範囲<select id="border-layout">
+<option value="columns">ヘッダーと列の区切り</option>
+<option value="grid">格子</option>
+<option value="outline">外枠のみ</option>
+<option value="none">なし</option>
+</select></label>
+<label>罫線の種類<select id="border-style">
+<option value="solid">実線</option>
+<option value="dashed">破線</option>
+<option value="dotted">点線</option>
+<option value="double">二重線</option>
+</select></label>
+<label>ヘッダー背景色<input id="header-color" type="color" value="#d9e2f3"></label>
+<label>太字<input id="bold" type="checkbox"></label></div></section><section><h2>3. プレビュー</h2><div id="preview"></div><table><thead><tr><th>項目</th><th>文字＋余白 (px)</th><th>セル数</th><th>確保幅 (px)</th></tr></thead><tbody id="stats"></tbody></table></section><section><h2>4. 出力</h2><div class="buttons"><button id="copy">TSVをコピー</button><button id="htmlcopy">結合・罫線付き表をコピー（試験機能）</button><button id="save">TSV保存</button></div><p id="msg" role="status"></p><textarea id="out" readonly></textarea><small>TSVは空白セルをタブで表現します。セル結合・罫線はHTMLコピーのみ。Excel側の貼り付け結果は環境によって異なります。</small></section></main><script>
 const $=id=>document.getElementById(id), ctx=document.createElement('canvas').getContext('2d');let widths=[],html='';const num=(id,min,max)=>Math.max(min,Math.min(max,Number($(id).value)||min));const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));function px(v){if(!v)return NaN;let n=parseFloat(v);return /pt$/i.test(v)?n*96/72:/^(\d+(\.\d+)?)(px)?$/i.test(v)?n:NaN}function styleVal(el,key){return el?.style?.getPropertyValue(key)||''}
-$('paste').addEventListener('paste',e=>{e.preventDefault();let h=e.clipboardData.getData('text/html'),t=e.clipboardData.getData('text/plain');$('raw').textContent=h||t||'情報なし';widths=[];if(!h){$('status').textContent='HTML情報なし。列幅を手入力してください。';render();return}let d=new DOMParser().parseFromString(h,'text/html'),table=d.querySelector('table');if(!table){$('status').textContent='表を検出できませんでした。';render();return}for(let c of table.querySelectorAll('col')){let w=px(styleVal(c,'width')||c.getAttribute('width'));let span=Math.min(1000,Number(c.getAttribute('span'))||1);for(let i=0;i<span;i++)widths.push(w)}if(!widths.length){let r=[...table.rows].find(r=>[...r.cells].every(c=>c.colSpan===1));if(r)widths=[...r.cells].map(c=>px(styleVal(c,'width')||c.getAttribute('width')))}if(widths.some(w=>!Number.isFinite(w)||w<=0))widths=[];let cell=table.querySelector('td,th'),rules=[...d.querySelectorAll('style')].map(s=>s.textContent).join('\n');let css=document.createElement('div').style;for(let m of rules.matchAll(/([^{}]+)\{([^{}]+)\}/g)){try{if(cell&&cell.matches(m[1].trim()))css.cssText+=';'+m[2]}catch{}}let f=styleVal(cell,'font-family')||css.fontFamily||cell?.querySelector('font')?.getAttribute('face');let s=styleVal(cell,'font-size')||css.fontSize;if(f)$('font').value=f.replace(/["']/g,'').split(',')[0];if(s&&Number.isFinite(px(s)))$('size').value=+(px(s)*.75).toFixed(2);if(widths.length){$('width').value=+widths[0].toFixed(2);$('mode').value='actual'}else $('mode').value='uniform';$('status').textContent=`列幅: ${widths.length?widths.map(w=>w.toFixed(1)).join(', ')+' px':'取得不可（手入力）'} ／ フォント: ${f||'取得不可'} ／ サイズ: ${s||'取得不可'}`;render()});
+function matchingStyle(element, rules) {
+  const style = document.createElement('div').style;
+  if (!element) return style;
+  for (const rule of rules) {
+    if (rule.type !== CSSRule.STYLE_RULE) continue;
+    try {
+      if (element.matches(rule.selectorText)) style.cssText += ';' + rule.style.cssText;
+    } catch {
+      // Some Excel-specific selectors cannot be matched by the browser.
+    }
+  }
+  style.cssText += ';' + element.style.cssText;
+  return style;
+}
+
+function headerColor(row, rules) {
+  if (!row) return '';
+  for (const element of [...row.cells, row]) {
+    const color = matchingStyle(element, rules).backgroundColor || element.getAttribute('bgcolor');
+    if (!color || !CSS.supports('color', color)) continue;
+
+    // Canvas normalizes opaque CSS colors to the hex format of the color input.
+    ctx.save();
+    ctx.fillStyle = 'transparent';
+    ctx.fillStyle = color;
+    const hex = ctx.fillStyle;
+    ctx.restore();
+    if (/^#[0-9a-f]{6}$/i.test(hex)) return hex;
+  }
+  return '';
+}
+
+$('paste').addEventListener('paste', event => {
+  event.preventDefault();
+  const source = event.clipboardData.getData('text/html');
+  $('raw').textContent = source || event.clipboardData.getData('text/plain') || '情報なし';
+  widths = [];
+  const doc = new DOMParser().parseFromString(source, 'text/html');
+  const table = doc.querySelector('table');
+  if (!table) {
+    $('status').textContent = source ? '表を検出できませんでした。' : 'HTML情報なし。列幅とヘッダー色を手入力してください。';
+    render();
+    return;
+  }
+
+  for (const col of table.querySelectorAll('col')) {
+    const width = px(styleVal(col, 'width') || col.getAttribute('width'));
+    const span = Math.min(1000, Number(col.getAttribute('span')) || 1);
+    for (let i = 0; i < span; i++) widths.push(width);
+  }
+  if (!widths.length) {
+    const row = [...table.rows].find(row => [...row.cells].every(cell => cell.colSpan === 1));
+    if (row) widths = [...row.cells].map(cell => px(styleVal(cell, 'width') || cell.getAttribute('width')));
+  }
+  if (widths.some(width => !Number.isFinite(width) || width <= 0)) widths = [];
+
+  const stylesheet = new CSSStyleSheet();
+  stylesheet.replaceSync([...doc.querySelectorAll('style')].map(style => style.textContent).join('\n'));
+  const cell = table.querySelector('td,th');
+  const style = matchingStyle(cell, stylesheet.cssRules);
+  const font = style.fontFamily || cell?.querySelector('font')?.getAttribute('face');
+  const size = style.fontSize;
+  const color = headerColor(table.rows[0], stylesheet.cssRules);
+  if (font) $('font').value = font.replace(/["']/g, '').split(',')[0];
+  if (size && Number.isFinite(px(size))) $('size').value = +(px(size) * .75).toFixed(2);
+  if (color) $('header-color').value = color;
+  if (widths.length) $('width').value = +widths[0].toFixed(2);
+  $('mode').value = widths.length ? 'actual' : 'uniform';
+
+  const widthSummary = widths.length ? widths.map(width => width.toFixed(1)).join(', ') + ' px' : '取得不可（手入力）';
+  $('status').textContent = `列幅: ${widthSummary} ／ フォント: ${font || '取得不可'} ／ サイズ: ${size || '取得不可'} ／ ヘッダー色: ${color || '取得不可（現在の色を使用）'}`;
+  render();
+});
+
 function readTsv(value) {
   const text = value.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n').replace(/\n$/, '');
   if (!text) return {names: [], rows: [], message: 'TSVを貼り付けてください。'};
@@ -30,6 +117,11 @@ function readTsv(value) {
   return {names, rows, message: `${names.length}列・${rows.length}データ行を読み込みました。`};
 }
 
+function decodeTsvCell(value) {
+  const quoted = /^"((?:[^"]|"")*)"$/.exec(value);
+  return quoted ? quoted[1].replace(/""/g, '"') : value;
+}
+
 function render() {
   const useTsv = $('input-mode').value === 'tsv';
   $('items').hidden = useTsv;
@@ -43,6 +135,10 @@ function render() {
   $('tsv-status').textContent = message ?? '';
   for (const id of ['copy', 'htmlcopy', 'save']) $(id).disabled = useTsv && !names.length;
 
+  // Plain TSV output uses the original encoding. HTML uses the decoded values.
+  const labels = useTsv ? names.map(decodeTsvCell) : names;
+  const displayRows = useTsv ? rows.map(row => row.map(decodeTsvCell)) : rows;
+
   const font = $('font').value || 'sans-serif';
   const size = num('size', 1, 100);
   const base = num('width', 1, 1000);
@@ -51,10 +147,10 @@ function render() {
   const bold = $('bold').checked;
 
   ctx.font = `${bold ? 'bold ' : ''}${size}pt ${JSON.stringify(font)}`;
-  const contentWidths = names.map(name => ctx.measureText(name).width);
+  const contentWidths = labels.map(name => ctx.measureText(name).width);
   if (useTsv) {
     ctx.font = `${size}pt ${JSON.stringify(font)}`;
-    for (const row of rows) {
+    for (const row of displayRows) {
       row.forEach((value, i) => {
         if (value) contentWidths[i] = Math.max(contentWidths[i], ctx.measureText(value).width);
       });
@@ -63,7 +159,7 @@ function render() {
 
   const columnWidths = [];
   const useActualWidths = $('mode').value === 'actual';
-  const columns = names.map((name, i) => {
+  const columns = labels.map((name, i) => {
     const need = contentWidths[i] + pad;
     let width = 0;
     let span = 0;
@@ -84,13 +180,27 @@ function render() {
   ).join('');
 
   const cols = columnWidths.map(width => `<col style="width:${width}px" width="${Math.round(width)}">`).join('');
-  const head = columns.map(({name, span, width}) =>
-    `<th colspan="${span}" style="width:${width}px;background:#d9e2f3;border:1px solid black;text-align:left;font-weight:${bold ? 'bold' : 'normal'}">${esc(name)}</th>`
+  const layout = $('border-layout').value;
+  const lineStyle = $('border-style').value;
+  const border = `${lineStyle === 'double' ? 3 : 1}px ${lineStyle} black`;
+  const color = $('header-color').value;
+  const cellBorders = (column, first, last) => {
+    if (layout === 'grid' || (layout === 'columns' && first)) return `border:${border};`;
+    if (layout === 'none') return '';
+
+    const edges = [];
+    if (first) edges.push('top');
+    if (last) edges.push('bottom');
+    if (layout === 'columns' || column === 0) edges.push('left');
+    if (layout === 'columns' || column === columns.length - 1) edges.push('right');
+    return edges.map(edge => `border-${edge}:${border};`).join('');
+  };
+  const head = columns.map(({name, span, width}, i) =>
+    `<th colspan="${span}" style="width:${width}px;background-color:${color};${cellBorders(i, true, !rows.length)}text-align:left;font-weight:${bold ? 'bold' : 'normal'}">${esc(name)}</th>`
   ).join('');
-  const body = rows.map((row, rowIndex) => {
-    const bottom = rowIndex === rows.length - 1 ? 'border-bottom:1px solid black;' : '';
+  const body = displayRows.map((row, rowIndex) => {
     const cells = columns.map(({span}, i) =>
-      `<td colspan="${span}" style="border-left:1px solid black;border-right:1px solid black;${bottom}white-space:pre">${esc(row[i] ?? '') || '&nbsp;'}</td>`
+      `<td colspan="${span}" style="${cellBorders(i, false, rowIndex === rows.length - 1)}white-space:pre">${esc(row[i] ?? '') || '&nbsp;'}</td>`
     );
     return `<tr>${cells.join('')}</tr>`;
   }).join('');
